@@ -1,0 +1,55 @@
+<h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">แดชบอร์ดรายงานการพัฒนาตนเอง</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-indigo-100 p-6 rounded-lg shadow">
+        <h3 class="text-lg font-medium text-indigo-700">จำนวนบุคลากรทั้งหมด</h3>
+        <p id="personnelCount" class="text-3xl font-bold text-indigo-900">0</p>
+    </div>
+    <div class="bg-green-100 p-6 rounded-lg shadow">
+        <h3 class="text-lg font-medium text-green-700">จำนวนกิจกรรมที่รายงาน (ตามตัวกรอง)</h3>
+        <p id="activityCount" class="text-3xl font-bold text-green-900">0</p>
+    </div>
+</div>
+
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-medium mb-2">ตัวกรองข้อมูล:</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        <div>
+            <label for="filterName" class="text-sm">ชื่อ:</label>
+            <select id="filterName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"></select>
+        </div>
+        <div>
+            <label for="filterPosition" class="text-sm">ตำแหน่ง:</label>
+            <select id="filterPosition" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"></select>
+        </div>
+        <div>
+            <label for="filterYear" class="text-sm">ปี (พ.ศ.):</label>
+            <select id="filterYear" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"></select>
+        </div>
+        <div>
+            <label for="filterMonth" class="text-sm">เดือน:</label>
+            <select id="filterMonth" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"></select>
+        </div>
+        <div class="flex items-end">
+            <button id="filterBtn" class="btn-primary w-full text-sm py-2">กรองข้อมูล</button>
+        </div>
+    </div>
+</div>
+
+<div class="overflow-x-auto bg-white rounded-lg shadow">
+    <table class="min-w-full table-auto">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ลำดับ</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ตำแหน่ง</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อกิจกรรม</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันเดือนปี</th>
+                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+            </tr>
+        </thead>
+        <tbody id="reportTableBody" class="bg-white divide-y divide-gray-200">
+            <tr><td colspan="6" class="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
+        </tbody>
+    </table>
+</div>
