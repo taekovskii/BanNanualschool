@@ -1,13 +1,625 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <base target="_top">
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เว็บแอป</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+        }
+        .container {
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+        }
+        /* Custom scrollbar for Webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Ensure SweetAlert uses Kanit */
+        .swal2-popup {
+            font-family: 'Kanit', sans-serif !important;
+        }
+        .signature-pad-container {
+            border: 1px dashed #ccc;
+            border-radius: 0.375rem; /* rounded-md */
+            position: relative;
+            width: 100%;
+            height: 200px; /* Adjust as needed */
+        }
+        #signature-pad {
+            width: 100%;
+            height: 100%;
+        }
+        .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+        .nav-link.active {
+            background-color: #6366f1; /* indigo-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            padding: 1.5rem; /* p-6 */
+        }
+        label {
+            font-weight: 500; /* medium */
+            color: #374151; /* gray-700 */
+        }
+        input[type="text"], input[type="date"], select, textarea {
+            border-color: #d1d5db; /* gray-300 */
+        }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+            border-color: #6366f1; /* indigo-500 */
+            box-shadow: 0 0 0 1px #6366f1;
+        }
+        .btn-primary {
+            background-color: #6366f1; /* indigo-500 */
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #4f46e5; /* indigo-600 */
+        }
+        .btn-secondary {
+            background-color: #e5e7eb; /* gray-200 */
+            color: #374151; /* gray-700 */
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db; /* gray-300 */
+        }
+
+    </style>
 </head>
 <body>
-    <iframe style="width: 100%; height: 100vh;" scrolling="yes" src="https://script.google.com/macros/s/AKfycbwGpdevhfHOQc5m8GW3AA1fCemIHvQf8neIjyu5n_tFRy7uTwdD8tOV11RdNMooxiNU/exec" frameborder="0"></iframe>
+    <div id="app-loader" class="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
+        <p class="ml-4 text-lg font-medium text-indigo-700">กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 hidden" id="app-content">
+        <header class="mb-8 text-center">
+            <img id="appLogo" src="" alt="Logo" class="mx-auto h-20 w-auto mb-4">
+            <h1 id="appTitle" class="text-3xl font-bold text-indigo-700"></h1>
+        </header>
+
+        <nav class="bg-white shadow-md rounded-lg mb-8 p-2 flex justify-center space-x-2">
+            <a href="#form" class="nav-link active" onclick="navigateTo('form')">📝 ฟอร์มรายงาน</a>
+            <a href="#dashboard" class="nav-link" onclick="navigateTo('dashboard')">📊 แดชบอร์ด</a>
+            <a href="#admin" class="nav-link" onclick="navigateTo('admin')">⚙️ จัดการข้อมูล</a>
+        </nav>
+
+        <main id="pageContent">
+            <section id="formPage" class="card space-y-6">
+                <?!= include('form-partial'); ?>
+            </section>
+
+            <section id="dashboardPage" class="card space-y-6 hidden">
+                <?!= include('dashboard-partial'); ?>
+            </section>
+
+            <section id="adminPage" class="card space-y-6 hidden">
+                <?!= include('admin-partial'); ?>
+            </section>
+        </main>
+        
+        <footer id="appFooter" class="mt-12 text-center text-sm text-gray-600">
+            </footer>
+    </div>
+
+  <script>
+    let personnelData = [];
+    let signaturePad;
+    let webAppUrl = '';
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', function() {
+        showLoader();
+        google.script.run
+            .withSuccessHandler(initialLoadSuccess)
+            .withFailureHandler(showErrorAlert)
+            .getInitialData();
+        
+        setupNavigation();
+    });
+
+    function initialLoadSuccess(data) {
+        personnelData = data.personnel || [];
+        webAppUrl = data.webAppUrl || '';
+        updateAppSettings(data.settings);
+        populateNameDropdown();
+        initializeSignaturePad(); // Initialize after other elements might affect layout
+        const hash = window.location.hash.substring(1) || 'form';
+        navigateTo(hash, true);
+        hideLoader();
+    }
+
+    function updateAppSettings(settings) {
+        if (settings) {
+            document.getElementById('appTitle').textContent = settings.websiteTitle;
+            document.title = settings.websiteTitle;
+            document.getElementById('appLogo').src = settings.logoUrl;
+            document.getElementById('appFooter').innerHTML = settings.footerText;
+
+            let faviconLink = document.querySelector("link[rel~='icon']");
+            if (!faviconLink) {
+                faviconLink = document.createElement('link');
+                faviconLink.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(faviconLink);
+            }
+            faviconLink.href = settings.faviconUrl;
+        }
+    }
+    
+    function showLoader(message = 'กำลังประมวลผล...') {
+        document.getElementById('app-loader').classList.remove('hidden');
+        document.getElementById('app-loader').querySelector('p').textContent = message;
+    }
+
+    function hideLoader() {
+        document.getElementById('app-loader').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+    }
+
+
+    // --- NAVIGATION ---
+    function setupNavigation() {
+        window.addEventListener('hashchange', () => {
+            const pageId = window.location.hash.substring(1) || 'form';
+            navigateTo(pageId, true);
+        });
+    }
+    
+    function navigateTo(pageId, skipHistoryPush = false) {
+        ['formPage', 'dashboardPage', 'adminPage'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(pageId + 'Page').classList.remove('hidden');
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + pageId) {
+                link.classList.add('active');
+            }
+        });
+        
+        if (!skipHistoryPush) {
+            window.location.hash = pageId;
+        }
+
+        if (pageId === 'dashboard') loadDashboardData();
+        if (pageId === 'admin') loadAdminSettings();
+    }
+
+
+    // --- FORM PAGE LOGIC ---
+    function populateNameDropdown() {
+        const nameSelect = document.getElementById('userName');
+        nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>';
+        personnelData.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.name;
+            option.textContent = p.name;
+            nameSelect.appendChild(option);
+        });
+    }
+
+    document.getElementById('userName').addEventListener('change', function() {
+        const selectedName = this.value;
+        const user = personnelData.find(p => p.name === selectedName);
+        document.getElementById('userPosition').value = user ? user.position : '';
+    });
+
+    function initializeSignaturePad() {
+        const canvas = document.getElementById('signature-pad');
+        if (!canvas) {
+            console.error("Signature canvas not found");
+            return;
+        }
+        let resizeTimeout;
+
+        function resizeCanvas() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                const parent = canvas.parentElement;
+
+                if (!parent) {
+                    console.error("Signature pad parent element not found during resize.");
+                    return;
+                }
+
+                // Force reflow to get updated dimensions
+                canvas.style.width = "0px";
+                canvas.style.height = "0px";
+                // Accessing offsetWidth/Height can trigger reflow
+                // eslint-disable-next-line no-unused-vars
+                const temp = parent.offsetWidth; // Read parent's dimension
+
+                canvas.style.width = "100%";
+                canvas.style.height = "100%";
+                
+                const parentWidth = parent.offsetWidth;
+                const parentHeight = parent.offsetHeight;
+
+                console.log(`[SignaturePad] Resizing. Orientation: ${window.innerWidth > window.innerHeight ? 'Landscape' : 'Portrait'}`);
+                console.log(`[SignaturePad] Parent  CSS dims: ${parent.style.width} x ${parent.style.height}`);
+                console.log(`[SignaturePad] Parent REAL dims: ${parentWidth}w x ${parentHeight}h. DevicePixelRatio: ${ratio}`);
+
+
+                if (parentWidth === 0 || parentHeight === 0) {
+                    console.warn("[SignaturePad] Parent has zero width or height. Canvas not resized effectively.");
+                    // Set a minimum size if dimensions are zero to avoid errors, though this is a workaround
+                    canvas.width = (parentWidth === 0 ? 300 : parentWidth) * ratio; // Default width if 0
+                    canvas.height = (parentHeight === 0 ? 150 : parentHeight) * ratio; // Default height if 0
+                } else {
+                    canvas.width = parentWidth * ratio;
+                    canvas.height = parentHeight * ratio;
+                }
+                
+                const context = canvas.getContext("2d");
+                context.scale(ratio, ratio);
+                
+                if (signaturePad) {
+                    signaturePad.clear();
+                    console.log("[SignaturePad] Cleared and scaled.");
+                } else {
+                    console.log("[SignaturePad] Canvas sized for initialization.");
+                }
+            }, 250); // Increased debounce delay for orientation changes
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        if ('onorientationchange' in window) { // More specific event for orientation
+            window.addEventListener('orientationchange', resizeCanvas);
+        }
+        
+        setTimeout(resizeCanvas, 100); // Initial resize call with a slight delay
+
+        signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)'
+        });
+        document.getElementById('clearSignature').addEventListener('click', () => signaturePad.clear());
+    }
+
+
+    async function handleFileUpload(fileInput) {
+        const file = fileInput.files[0];
+        if (!file) return null;
+        if (file.size > 4 * 1024 * 1024) {
+            showErrorAlert('ไฟล์มีขนาดใหญ่เกิน 4MB');
+            fileInput.value = ''; return null;
+        }
+        if (fileInput.id.includes('image')) {
+            if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                showErrorAlert('กรุณาอัปโหลดไฟล์รูปภาพ (JPG, PNG, GIF) เท่านั้น');
+                fileInput.value = ''; return null;
+            }
+        } else if (fileInput.id === 'signatureFileUpload') {
+             if (file.type !== 'image/png') {
+                showErrorAlert('กรุณาอัปโหลดไฟล์ลายเซ็นเป็น PNG เท่านั้น');
+                fileInput.value = ''; return null;
+            }
+        }
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve({ name: file.name, type: file.type, base64: reader.result.split(',')[1] });
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    let image1Data = null, image2Data = null, signatureFileData = null;
+    document.getElementById('image1').addEventListener('change', async function() { image1Data = await handleFileUpload(this); });
+    document.getElementById('image2').addEventListener('change', async function() { image2Data = await handleFileUpload(this); });
+    document.getElementById('signatureFileUpload').addEventListener('change', async function() { signatureFileData = await handleFileUpload(this); });
+
+    document.getElementById('reportForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        showLoader('กำลังส่งข้อมูลและสร้าง PDF...');
+        const formData = {
+            name: document.getElementById('userName').value,
+            position: document.getElementById('userPosition').value,
+            activityName: document.getElementById('activityName').value,
+            activityDate: document.getElementById('activityDate').value,
+            organizer: document.getElementById('organizer').value,
+            knowledge: document.getElementById('knowledge').value,
+            results: document.getElementById('results').value,
+            image1: image1Data, image2: image2Data, signature: null, signatureFile: signatureFileData
+        };
+        if (!formData.name || !formData.activityName || !formData.activityDate) {
+            showErrorAlert("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน: ชื่อผู้เข้าร่วม, ชื่อกิจกรรม, วันที่เข้าร่วม");
+            hideLoader(); return;
+        }
+        if (!signaturePad.isEmpty()) {
+            formData.signature = { name: 'signature-' + Date.now() + '.png', type: 'image/png', base64: signaturePad.toDataURL('image/png').split(',')[1] };
+        } else if (!signatureFileData && document.getElementById('signatureFileUpload').files.length > 0) {
+            formData.signatureFile = await handleFileUpload(document.getElementById('signatureFileUpload'));
+        }
+        google.script.run
+            .withSuccessHandler(function(response) {
+                hideLoader();
+                if (response.success) {
+                    Swal.fire({ title: 'สำเร็จ!', icon: 'success', confirmButtonText: 'ตกลง',
+                        html: `${response.message}<br><br>
+                               <a href="${response.pdfLink}" target="_blank" class="btn-primary inline-block mr-2">เปิดไฟล์ PDF (หน้าใหม่)</a>
+                               <button onclick="viewPdfInline('${response.pdfViewLink}')" class="btn-secondary inline-block">ดู PDF ที่นี่</button>`
+                    });
+                    document.getElementById('reportForm').reset();
+                    signaturePad.clear();
+                    image1Data = null; image2Data = null; signatureFileData = null;
+                    ['image1', 'image2', 'signatureFileUpload'].forEach(id => document.getElementById(id).value = '');
+                } else { showErrorAlert(response.message); }
+            })
+            .withFailureHandler(showErrorAlert).processForm(formData);
+    });
+
+ function viewPdfInline(pdfViewLink) {
+    if (!pdfViewLink || pdfViewLink === '#') {
+        showErrorAlert('ไม่พบลิงก์สำหรับแสดง PDF');
+        return;
+    }
+    const iframeId = 'pdfViewerIframe_' + Date.now();
+    const loadingIndicatorId = 'pdfLoadingIndicator_' + iframeId;
+    // let iframeCanBePrinted = false; // Flag <-- ลบแล้ว
+
+    Swal.fire({
+        title: 'รายงาน PDF',
+        html: `<div style="text-align: center; margin-bottom: 10px; font-style: italic; color: #555;" id="${loadingIndicatorId}">กำลังโหลด PDF...</div>
+               <iframe id="${iframeId}" src="${pdfViewLink}" style="width:100%; height:70vh; border:0; display: none;"></iframe>`,
+        width: '90%',
+        showCloseButton: true,
+        showConfirmButton: true,
+        confirmButtonText: 'ปิด',
+        confirmButtonColor: '#0d6efd',
+        // showDenyButton: true,       // <-- ลบ/แก้ไขเป็น false
+        // denyButtonText: 'พิมพ์ PDF',  // <-- ลบแล้ว
+        // denyButtonColor: '#0d6efd', // <-- ลบแล้ว
+        didOpen: () => {
+            const pdfIframe = document.getElementById(iframeId);
+            const loadingIndicator = document.getElementById(loadingIndicatorId);
+            if (pdfIframe) {
+                pdfIframe.onload = () => {
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
+                    pdfIframe.style.display = 'block';
+                    console.log("[PDFView] Iframe loaded: " + pdfViewLink);
+                    // ส่วนที่เกี่ยวกับ iframeCanBePrinted ถูกลบออกไปแล้ว
+                    // if (pdfIframe.contentWindow && typeof pdfIframe.contentWindow.print === 'function') {
+                    //     console.log("[PDFView] Iframe contentWindow is accessible and has print function.");
+                    // } else {
+                    //     console.warn("[PDFView] Iframe contentWindow is NULL or print function not available AFTER iframe onload. Src: " + pdfIframe.src);
+                    // }
+                };
+                pdfIframe.onerror = () => {
+                    if (loadingIndicator) loadingIndicator.textContent = 'ไม่สามารถโหลด PDF ได้ โปรดตรวจสอบลิงก์หรือการเชื่อมต่อ';
+                    console.error("[PDFView] Iframe failed to load src: " + pdfViewLink);
+                    // iframeCanBePrinted = false; // <-- ลบแล้ว
+                };
+            } else {
+                // iframeCanBePrinted = false; // <-- ลบแล้ว
+            }
+        }
+    }).then((result) => {
+        // if (result.isDenied) { ... } // <-- ทั้ง block นี้ถูกลบแล้ว
+        // โค้ดส่วนที่เหลือจะทำงานเมื่อกดปุ่ม "ปิด" (Confirm) หรือปิด dialog
+        if (result.isConfirmed) {
+            console.log("[PDFView] Dialog closed by user (Confirm button).");
+        } else if (result.dismiss === Swal.DismissReason.close) {
+            console.log("[PDFView] Dialog closed by user (Close button/X).");
+        }
+    });
+}
+
+    // --- DASHBOARD PAGE LOGIC ---
+    function loadDashboardData() {
+        showLoader('กำลังโหลดข้อมูลแดชบอร์ด...');
+        const filters = {
+            name: document.getElementById('filterName').value,
+            position: document.getElementById('filterPosition').value,
+            year: document.getElementById('filterYear').value,
+            month: document.getElementById('filterMonth').value
+        };
+        const filterNameSelect = document.getElementById('filterName');
+        if (filterNameSelect.options.length <=1 ) {
+            filterNameSelect.innerHTML = '<option value="">-- ทุกคน --</option>';
+            personnelData.forEach(p => { const opt = document.createElement('option'); opt.value = p.name; opt.textContent = p.name; filterNameSelect.appendChild(opt); });
+        }
+        const filterPositionSelect = document.getElementById('filterPosition');
+         if (filterPositionSelect.options.length <= 1) {
+            filterPositionSelect.innerHTML = '<option value="">-- ทุกตำแหน่ง --</option>';
+            [...new Set(personnelData.map(p => p.position))].forEach(pos => { const opt = document.createElement('option'); opt.value = pos; opt.textContent = pos; filterPositionSelect.appendChild(opt); });
+        }
+        const yearSelect = document.getElementById('filterYear');
+        if (yearSelect.options.length <= 1) {
+             yearSelect.innerHTML = '<option value="">-- ทุกปี --</option>';
+             const currentYear = new Date().getFullYear();
+             for (let y = currentYear; y >= currentYear - 5; y--) { yearSelect.add(new Option(y + 543, y)); }
+        }
+        const monthSelect = document.getElementById('filterMonth');
+         if (monthSelect.options.length <= 1) {
+            monthSelect.innerHTML = '<option value="">-- ทุกเดือน --</option>';
+            ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]
+                .forEach((m, i) => { monthSelect.add(new Option(m, i + 1)); });
+        }
+        google.script.run
+            .withSuccessHandler(function(response) {
+                hideLoader();
+                if(response.error){ showErrorAlert("โหลดข้อมูลแดชบอร์ดผิดพลาด: " + response.error); return; }
+                document.getElementById('personnelCount').textContent = response.personnelCount || 0;
+                document.getElementById('activityCount').textContent = response.activityCount || 0;
+                const tableBody = document.getElementById('reportTableBody');
+                tableBody.innerHTML = '';
+                if (response.data && response.data.length > 0) {
+                    response.data.forEach((row, index) => {
+                        const tr = tableBody.insertRow();
+                        tr.innerHTML = `
+                            <td class="border px-4 py-2 text-center">${row.no}</td> <td class="border px-4 py-2">${row.name}</td>
+                            <td class="border px-4 py-2">${row.position}</td> <td class="border px-4 py-2">${row.activityName}</td>
+                            <td class="border px-4 py-2 text-center">${row.activityDate}</td>
+                            <td class="border px-4 py-2 text-center">
+                                <a href="${row.pdfLink}" target="_blank" class="text-blue-500 hover:text-blue-700" title="ดาวน์โหลด PDF">📥</a>
+                                <button onclick="viewPdfInline('${row.pdfViewLink}')" class="text-green-500 hover:text-green-700 ml-2" title="ดู PDF">👁️</button>
+                            </td>`;
+                    });
+                } else { tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">ไม่พบข้อมูล</td></tr>'; }
+            })
+            .withFailureHandler(showErrorAlert).getReportData(filters);
+    }
+    document.getElementById('filterBtn').addEventListener('click', loadDashboardData);
+
+    // --- ADMIN PAGE LOGIC ---
+    let adminAuthenticated = false;
+    function loadAdminSettings() {
+        if (!adminAuthenticated) { promptForAdminPassword(); return; }
+        showLoader('กำลังโหลดการตั้งค่า...');
+        google.script.run
+            .withSuccessHandler(function(settings){
+                hideLoader();
+                document.getElementById('websiteTitle').value = settings.websiteTitle;
+                document.getElementById('logoUrl').value = settings.logoUrl;
+                document.getElementById('faviconUrlInput').value = settings.faviconUrl;
+                document.getElementById('footerText').value = settings.footerText;
+            }).withFailureHandler(showErrorAlert).getCurrentSettings();
+        const personnelListAdmin = document.getElementById('personnelListAdmin');
+        personnelListAdmin.innerHTML = 'กำลังโหลด...';
+        let currentPersonnel = personnelData;
+        if (!currentPersonnel || currentPersonnel.length === 0) {
+             google.script.run.withSuccessHandler(function(pList) {
+                 personnelData = pList || []; currentPersonnel = pList || [];
+                 renderPersonnelListAdmin(currentPersonnel);
+             }).withFailureHandler(showErrorAlert).getPersonnelList();
+        } else { renderPersonnelListAdmin(currentPersonnel); }
+    }
+    function renderPersonnelListAdmin(pList) {
+        const personnelListAdmin = document.getElementById('personnelListAdmin');
+        personnelListAdmin.innerHTML = '';
+        if (pList && pList.length > 0) {
+            const ul = document.createElement('ul'); ul.className = 'list-disc pl-5 space-y-1';
+            pList.forEach(p => { const li = document.createElement('li'); li.textContent = `${p.name} - ${p.position}`; ul.appendChild(li); });
+            personnelListAdmin.appendChild(ul);
+        } else { personnelListAdmin.textContent = 'ยังไม่มีข้อมูลบุคลากร'; }
+    }
+    async function promptForAdminPassword() {
+        const { value: password } = await Swal.fire({
+            title: 'กรุณากรอกรหัสผ่านผู้ดูแลระบบ', input: 'password', inputPlaceholder: 'รหัสผ่าน',
+            inputAttributes: { autocapitalize: 'off', autocorrect: 'off' }, showCancelButton: true,
+            confirmButtonText: 'เข้าสู่ระบบ', cancelButtonText: 'ยกเลิก', allowOutsideClick: false,
+        });
+        if (password) {
+            showLoader('กำลังตรวจสอบรหัสผ่าน...');
+            google.script.run
+                .withSuccessHandler(function(isValid) {
+                    hideLoader();
+                    if (isValid) {
+                        adminAuthenticated = true;
+                        document.getElementById('adminPasswordPrompt').classList.add('hidden');
+                        document.getElementById('adminContent').classList.remove('hidden');
+                        loadAdminSettings();
+                    } else { Swal.fire('ข้อผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error'); navigateTo('form'); }
+                }).withFailureHandler(showErrorAlert).verifyAdminPassword(password);
+        } else { navigateTo('form'); }
+    }
+    document.getElementById('adminSettingsForm').addEventListener('submit', function(e) {
+        e.preventDefault(); showLoader('กำลังบันทึกการตั้งค่า...');
+        const settings = {
+            websiteTitle: document.getElementById('websiteTitle').value, logoUrl: document.getElementById('logoUrl').value,
+            faviconUrl: document.getElementById('faviconUrlInput').value, footerText: document.getElementById('footerText').value
+        };
+        google.script.run
+            .withSuccessHandler(function(response){
+                hideLoader();
+                if(response.success) { Swal.fire('สำเร็จ', response.message, 'success'); updateAppSettings(settings); }
+                else { showErrorAlert(response.message); }
+            }).withFailureHandler(showErrorAlert).saveAdminSettings(settings);
+    });
+    document.getElementById('addPersonnelForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('newPersonnelName').value;
+        const position = document.getElementById('newPersonnelPosition').value;
+        showLoader('กำลังเพิ่มข้อมูลบุคลากร...');
+        google.script.run
+            .withSuccessHandler(function(response){
+                hideLoader();
+                 if(response.success) {
+                    Swal.fire('สำเร็จ', response.message, 'success');
+                    personnelData = response.personnel || []; populateNameDropdown();
+                    renderPersonnelListAdmin(personnelData); document.getElementById('addPersonnelForm').reset();
+                } else { showErrorAlert(response.message); }
+            }).withFailureHandler(showErrorAlert).addPersonnel(name, position);
+    });
+    document.getElementById('excelImportForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('excelFile'); const file = fileInput.files[0];
+        if (!file) { showErrorAlert('กรุณาเลือกไฟล์ Excel (.xlsx)'); return; }
+        if (!file.name.endsWith('.xlsx')) { showErrorAlert('รองรับเฉพาะไฟล์ .xlsx เท่านั้น'); return; }
+        showLoader('กำลังนำเข้าข้อมูลจาก Excel...');
+        try {
+            const fileReader = new FileReader();
+            fileReader.onload = function(event) {
+                const base64Data = event.target.result.split(',')[1];
+                const fileData = { name: file.name, type: file.type, base64: base64Data };
+                google.script.run
+                    .withSuccessHandler(function(response) {
+                        hideLoader();
+                        if (response.success) {
+                            Swal.fire('สำเร็จ', response.message, 'success');
+                            personnelData = response.personnel || []; populateNameDropdown();
+                            renderPersonnelListAdmin(personnelData); fileInput.value = '';
+                        } else { showErrorAlert('นำเข้าไม่สำเร็จ: ' + response.message); }
+                    }).withFailureHandler(function(error) { hideLoader(); showErrorAlert('นำเข้า Excel ผิดพลาด: ' + error.message); })
+                    .importPersonnelFromExcel(fileData);
+            };
+            fileReader.onerror = function(error) { hideLoader(); showErrorAlert('อ่านไฟล์ผิดพลาด: ' + error.message); };
+            fileReader.readAsDataURL(file);
+        } catch (error) { hideLoader(); showErrorAlert('ผิดพลาด: ' + error.message); }
+    });
+
+    // --- UTILITY FUNCTIONS ---
+    function showErrorAlert(error) {
+        hideLoader(); console.error('GAS Error/Client Error:', error);
+        let message = 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
+        if (typeof error === 'string') message = error;
+        else if (error && error.message) message = error.message;
+        else if (error && error.details) message = error.details; // For GAS server-side errors
+        Swal.fire({ title: 'เกิดข้อผิดพลาด!', text: message, icon: 'error', confirmButtonText: 'ตกลง' });
+    }
+</script>
+
 </body>
 </html>
